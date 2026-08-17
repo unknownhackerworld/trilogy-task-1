@@ -144,9 +144,9 @@ fn enumerate_audio_sessions() -> Result<Vec<AudioDevice>> {
         // Get device format info
         let audio_client: IAudioClient = default_device.Activate(CLSCTX_ALL, None)?;
         let format_ptr = audio_client.GetMixFormat()?;
-        let format = &*format_ptr;
-        let sample_rate = format.nSamplesPerSec;
-        let channels = format.nChannels;
+        // Copy packed struct fields to locals before freeing the pointer
+        let sample_rate = (*format_ptr).nSamplesPerSec;
+        let channels = (*format_ptr).nChannels;
         CoTaskMemFree(Some(format_ptr as *const _ as *const _));
         drop(audio_client);
 
@@ -294,18 +294,22 @@ fn capture_loop_wasapi(
         let format_ptr = audio_client.GetMixFormat()?;
         let format = &*format_ptr;
 
+        // Copy packed struct fields to locals — WAVEFORMATEX is 1-byte aligned
+        // so taking a reference to its fields is undefined behavior.
         let native_rate = format.nSamplesPerSec;
         let native_channels = format.nChannels;
+        let bits_per_sample = format.wBitsPerSample;
+
         // WASAPI shared mode returns float32 on virtually all modern Windows devices.
         // Check wBitsPerSample: 32 = float32, 16 = int16.
-        let is_float32 = format.wBitsPerSample == 32;
+        let is_float32 = bits_per_sample == 32;
 
         println!(
-            "[Audio] WASAPI loopback: {}Hz {} ch {} — format: {}",
+            "[Audio] WASAPI loopback: {}Hz {} ch {}bit ({})",
             native_rate,
             native_channels,
+            bits_per_sample,
             if is_float32 { "float32" } else { "int16" },
-            format.wBitsPerSample
         );
 
         // Initialize in shared loopback mode
