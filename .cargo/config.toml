@@ -1,0 +1,9 @@
+[env]
+CUDA_PATH = "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6"
+CudaToolkitDir = "C:\\Program Files\\NVIDIA GPU Computing Toolkit\\CUDA\\v12.6\\"
+LIBCLANG_PATH = "C:\\Program Files\\LLVM\\bin"
+
+[build]
+# Prepend CUDA 12.6 and LLVM bin to PATH so nvcc and clang are found first
+# (overrides system PATH which still has CUDA 11.8 first)
+rustflags = []

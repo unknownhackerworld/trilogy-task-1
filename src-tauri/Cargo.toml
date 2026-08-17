@@ -1,0 +1,70 @@
+[package]
+name = "speech-translator"
+version = "0.1.0"
+description = "Real-time speech translator for online meetings"
+authors = ["Allen Joseph"]
+edition = "2021"
+rust-version = "1.70"
+
+[lib]
+name = "speech_translator_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+tauri-plugin-shell = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+thiserror = "2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Windows audio capture
+[target.'cfg(windows)'.dependencies]
+windows = { version = "0.58", features = [
+    "Win32_Media_Audio",
+    "Win32_System_Com",
+    "Win32_System_Com_StructuredStorage",
+    "Win32_System_Threading",
+    "Win32_Foundation",
+    "Win32_Security",
+    "Win32_UI_Shell_PropertiesSystem",
+    "Win32_Devices_FunctionDiscovery",
+    "Win32_System_Variant",
+    "Win32_System_Diagnostics_ToolHelp",
+] }
+
+# ASR - Local Whisper with GPU acceleration (CUDA for NVIDIA GPUs)
+whisper-rs = { version = "0.16", features = ["cuda"] }
+
+# ASR - Google Speech (gRPC)
+tonic = { version = "0.12", features = ["tls", "tls-roots"] }
+prost = "0.13"
+prost-types = "0.13"
+
+# Translation
+reqwest = { version = "0.12", features = ["json", "blocking"] }
+
+# Audio processing
+rubato = "0.16"
+hound = "3.5"
+
+# Deepgram WebSocket streaming
+tokio-tungstenite = { version = "0.24", features = ["native-tls"] }
+futures-util = "0.3"
+
+# Async utilities
+async-channel = "2"
+parking_lot = "0.12"
+
+# Utilities
+dirs = "5"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
